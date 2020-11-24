@@ -2,7 +2,7 @@ import { render, renderWithChildren, copyArr } from "../components/utils";
 import { DaysController } from "./days";
 import { TripDay } from "../components/trip-days";
 import { Sort } from "../components/sort";
-import { getEvent } from "../components/data";
+import { ModelEvent } from "../components/model-event";
 
 export const Mode = {
   ADDING: `adding`,
@@ -10,22 +10,27 @@ export const Mode = {
 };
 
 export class TripController {
-  constructor(days) {
+  constructor(days, onDataChange) {
     this._days = days;
+    this._onDataChange = onDataChange;
     this._tripDays = renderWithChildren(
       new TripDay().getElement(),
       this._renderDays(this._days)
     );
     this._sort = new Sort();
     this._tripEventsDom = document.querySelector(`.trip-events`);
+    this._sortDom = this._tripEventsDom.querySelector(`.trip-sort`);
+    this._tripDaysDom = this._tripEventsDom.querySelector(`.trip-days`);
     this._creatingEvent = null;
-
-    // this._onChangeView = this._onChangeView.bind(this);
-    // this._onDataChange = this._onDataChange.bind(this);
     this._activeEvent = null;
   }
 
-  init() {
+  init(check) {
+    if (check) {
+      this._tripEventsDom.removeChild(this._sortDom);
+      this._tripEventsDom.removeChild(this._tripDaysDom);
+    }
+
     render(this._tripEventsDom, this._sort.getElement());
     render(this._tripEventsDom, this._tripDays);
 
@@ -37,25 +42,59 @@ export class TripController {
   _renderDays(days) {
     return new DaysController(
       days,
-      this._onDataChange.bind(this),
+      this._onDataChange,
       this._onChangeView.bind(this),
       Mode.DEFAULT
     ).create();
   }
 
+  /* eslint-disable */
   createEvent() {
     if (this._creatingEvent) {
       return;
     }
 
-    const defaultEvent = getEvent();
+    const defaultEvent = {
+      id: "",
+      date_to: Date.now(),
+      date_from: Date.now() + Math.pow(7, 10),
+      base_price: 400,
+      is_favorite: false,
+      type: "drive",
+      offers: [
+        { title: "Choose live music", price: 80, accepted: false },
+        { title: "Choose VIP area", price: 150, accepted: true },
+        { title: "Order a breakfast", price: 90, accepted: true },
+      ],
+      destination: {
+        description:
+          "Monaco, is a beautiful city, with an embankment of a mighty river as a centre of attraction, full of of cozy canteens where you can try the best coffee in the Middle East.",
+        name: "Monaco",
+        pictures: [
+          {
+            src: "http://picsum.photos/300/200?r=0.9957317523090607",
+            description: "Frankfurt street market",
+          },
+          {
+            src: "http://picsum.photos/300/200?r=0.30120342442988113",
+            description: "Frankfurt park",
+          },
+          {
+            src: "http://picsum.photos/300/200?r=0.22926650020860162",
+            description: "Frankfurt embankment",
+          },
+        ],
+      },
+    };
+
+    const eventToModel = new ModelEvent(defaultEvent);
 
     this._creatingEvent = new DaysController(
       this._days,
-      this._onDataChange.bind(this),
+      this._onDataChange,
       this._onChangeView.bind(this),
       Mode.ADDING,
-      defaultEvent
+      eventToModel
     );
 
     this._cleanContainer();
@@ -72,36 +111,6 @@ export class TripController {
     }
 
     this._activeEvent = event;
-  }
-
-  _onDataChange(newData, oldData) {
-    // ДОРАБОТАТЬ
-    // console.log(newData.favorites);
-
-    let indexEvent = null;
-    const indexDay = this._days.findIndex((days) => {
-      indexEvent = days.findIndex((event) => event === oldData);
-      return days.find((event) => event === oldData);
-    });
-
-    if (oldData === null && newData === null) {
-      this._days[0].splice(0, 1);
-      this._creatingEvent = null;
-    } else if (newData === null) {
-      this._days[indexDay].splice(indexEvent, 1);
-    } else if (oldData === null) {
-      this._creatingEvent = null;
-      this._days[0] = [newData, ...this._days[0]];
-    } else {
-      this._days[indexDay][indexEvent] = newData;
-    }
-
-    // Если нету ни одного события в дне, то он удаляется
-    this._days = this._days.filter((day) => day.length);
-
-    this._cleanContainer();
-
-    render(this._tripDays, this._renderDays(this._days));
   }
 
   _update(data) {
@@ -138,10 +147,11 @@ export class TripController {
         const sortedTime = daysArr.map((day) =>
           day.sort((first, last) =>
             direction
-              ? first.randomTimeTransit - last.randomTimeTransit
-              : last.randomTimeTransit - first.randomTimeTransit
+              ? first.difference.hours - last.difference.hours
+              : last.difference.hours - first.difference.hours
           )
         );
+
         this._update(sortedTime);
         break;
 

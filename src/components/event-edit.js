@@ -1,11 +1,5 @@
 import { AbstractComponent } from "./abstract-component";
-import {
-  getRandomBoolean,
-  getRandomNumber,
-  types,
-  citiesArr,
-  getTitleByType,
-} from "./data";
+import { getRandomBoolean, types, citiesArr, getTitleByType } from "./data";
 import "flatpickr/dist/flatpickr.min.css";
 import "flatpickr/dist/themes/light.css";
 import flatpickr from "flatpickr";
@@ -14,22 +8,16 @@ import flatpickr from "flatpickr";
 export class EventEdit extends AbstractComponent {
   constructor({
     typeEventTransfer,
-    typeEventActivity,
     photos,
     description,
     isDateStart,
     isDateEnd,
     eventOffer,
     favorites,
-    randomTimeTransit,
     city,
-    icon,
-    typeOutput,
     price,
   }) {
     super();
-    this._typeOutput = typeOutput;
-    this._typeEventActivity = typeEventActivity;
     this._typeEventTransfer = typeEventTransfer;
     this._city = city;
     this._price = price;
@@ -39,9 +27,6 @@ export class EventEdit extends AbstractComponent {
     this._isDateEnd = isDateEnd;
     this._favorites = favorites;
     this._eventOffer = eventOffer;
-    this._randomTimeTransit = randomTimeTransit;
-    this._icon = icon;
-    this._element = null;
 
     this._onChangeTypeEvent();
     this._onChangeEventDestination();
@@ -114,18 +99,17 @@ export class EventEdit extends AbstractComponent {
        </label>
        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${
          this._isDateStart.dayPresent
-       }/${+this._isDateStart.monthNumber + 1}/${this._isDateStart.year} ${
+       }/${+this._isDateStart.monthNumber}/${this._isDateStart.year} ${
       this._isDateStart.timePresent
     }"> 
        —
        <label class="visually-hidden" for="event-end-time-1">
          To
        </label>
-       <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${
-         +this._isDateEnd.dayPresent + 1
-       }/${+this._isDateEnd.monthNumber + 1}/${this._isDateEnd.year} ${
-      +this._isDateEnd.hours + this._randomTimeTransit
-    }:${this._isDateEnd.minutes}">
+       <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${+this
+         ._isDateEnd.dayPresent}/${+this._isDateEnd.monthNumber}/${
+      this._isDateEnd.year
+    } ${+this._isDateEnd.hours}:${this._isDateEnd.minutes}">
      </div>
   
      <div class="event__field-group  event__field-group--price">
@@ -164,12 +148,12 @@ export class EventEdit extends AbstractComponent {
                    (elem) => `
                <div class="event__offer-selector">
                 <input class="event__offer-checkbox  visually-hidden" id="event-offer-${
-                  elem.value
-                }-1" type="checkbox" name="event-offer-${elem.value}" ${
-                     elem.checked ? `checked` : ``
+                  elem.title
+                }-1" type="checkbox" name="event-offer-${elem.title}" ${
+                     elem.accepted ? `checked` : ``
                    }>
                 <label class="event__offer-label" for="event-offer-${
-                  elem.value
+                  elem.title
                 }-1">
                   <span class="event__offer-title">${
                     elem.title
@@ -186,7 +170,7 @@ export class EventEdit extends AbstractComponent {
      <section class="event__section  event__section--destination">
         <h3 class="event__section-title  event__section-title--destination">Destination</h3>
         <p class="event__destination-description">
-          ${this._description.slice(0, getRandomNumber(4))}
+          ${this._description}
         </p>
         <div class="event__photos-container">
           <div class="event__photos-tape">
@@ -254,9 +238,7 @@ export class EventEdit extends AbstractComponent {
         );
         citiesArr.forEach((city) => {
           if (target.value === city) {
-            input.textContent = this._description[
-              getRandomNumber(this._description.length)
-            ];
+            input.textContent = this._description;
           }
         });
       });

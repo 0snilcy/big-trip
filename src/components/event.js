@@ -7,14 +7,13 @@ export class Event extends AbstractComponent {
     typeEventTransfer,
     isDateStart,
     isDateEnd,
-    transitTime,
     eventOffer,
     price,
-    randomTimeTransit,
     city,
     icon,
     typeOutput,
     typeEventActivity,
+    difference,
   }) {
     super();
     this._typeEventActivity = typeEventActivity;
@@ -23,11 +22,10 @@ export class Event extends AbstractComponent {
     this._typeEventTransfer = typeEventTransfer;
     this._isDateStart = isDateStart;
     this._isDateEnd = isDateEnd;
-    this._transitTime = transitTime;
     this._eventOffer = eventOffer;
     this._price = price;
-    this._randomTimeTransit = randomTimeTransit;
     this._city = city;
+    this._difference = difference;
   }
 
   getTemplate() {
@@ -55,9 +53,9 @@ export class Event extends AbstractComponent {
       this._isDateEnd.minutes
     }">${this._isDateEnd.hours}:${this._isDateEnd.minutes}</time>
     </p>
-    <p class="event__duration">${
-      this._isDateEnd.hours - this._isDateStart.hours
-    }H ${`00`}M</p>
+    <p class="event__duration">${this._difference.hours}H ${
+      this._difference.minutes
+    }M</p>
   </div>
   <p class="event__price">
     €&nbsp;<span class="event__price-value">${this._price}</span>
@@ -66,7 +64,7 @@ export class Event extends AbstractComponent {
   <ul class="event__selected-offers">
     ${this._eventOffer
       .map((objOffer) => {
-        return objOffer.checked
+        return objOffer.accepted
           ? `<li class="event__offer">
       <span class="event__offer-title">${objOffer.title}</span>
       +

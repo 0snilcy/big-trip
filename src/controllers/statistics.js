@@ -9,10 +9,16 @@ export class StatisticsController {
   constructor(days) {
     this._days = days;
     this._statistics = new Statistics().getElement();
+    this._statisticsDom = pageBodyContainer.querySelector(`.statistics`);
   }
 
-  init() {
+  init(check) {
     // this.show();
+
+    if (check) {
+      pageBodyContainer.removeChild(this._statisticsDom);
+    }
+
     render(pageBodyContainer, this._statistics);
     this._renderCharts();
     this.hide();

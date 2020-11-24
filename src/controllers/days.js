@@ -30,7 +30,11 @@ export class DaysController {
         arrEvents.append(tripEvents);
       });
 
-      const day = new Day(id, arrEvents).getElement();
+      const day = new Day(
+        id,
+        arrEvents,
+        dayOfEventsData[0].isDateStart
+      ).getElement();
       daysMarkup.append(day);
     });
     return daysMarkup;
